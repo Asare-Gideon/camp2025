@@ -9,7 +9,7 @@ interface ServiceCardProps {
   href: string;
 }
 
-export function ServiceCard({
+export default function ServiceCard({
   title,
   icon: Icon,
   href,
