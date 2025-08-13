@@ -15,9 +15,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { CheckCircle, XCircle } from "lucide-react";
-import Link from "next/link";
-import { ChevronLeft } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -40,6 +37,11 @@ type User = {
     [day: string]: AttendanceRecord;
   };
 };
+
+interface PageProps {
+  params: Promise<{ day: string }>;
+}
+
 const allUsersData: User[] = [
   {
     id: "user-1",
@@ -92,16 +94,12 @@ const dayDisplayNames: Record<string, string> = {
   "day-7": "Day Seven",
 };
 
-export default function ServiceDayPage({
-  params,
-}: {
-  params: { day: string };
-}) {
+export default function ServiceDayPage({ params }: PageProps) {
+  const [day, setDay] = useState<string>("");
+
   const displayDay =
-    dayDisplayNames[params.day] ||
-    params.day
-      .replace(/-/g, " ")
-      .replace(/\b\w/g, (char) => char.toUpperCase());
+    dayDisplayNames[day] ||
+    day.replace(/-/g, " ").replace(/\b\w/g, (char) => char.toUpperCase());
 
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [currentUserAttendance, setCurrentUserAttendance] = useState<{
@@ -111,17 +109,23 @@ export default function ServiceDayPage({
   } | null>(null);
 
   useEffect(() => {
+    params.then((resolvedParams) => {
+      setDay(resolvedParams.day);
+    });
+  }, [params]);
+
+  useEffect(() => {
     if (allUsersData.length > 0 && !selectedUserId) {
       setSelectedUserId(allUsersData[0].id);
     }
   }, [selectedUserId]);
 
   useEffect(() => {
-    if (selectedUserId) {
+    if (selectedUserId && day) {
       const user = allUsersData.find((u) => u.id === selectedUserId);
       if (user) {
         setCurrentUserAttendance(
-          (user.attendance[params.day] as any) || {
+          (user.attendance[day] as any) || {
             morning: false,
             afternoon: false,
             evening: false,
@@ -129,7 +133,7 @@ export default function ServiceDayPage({
         );
       }
     }
-  }, [selectedUserId, params.day]);
+  }, [selectedUserId, day]);
 
   return (
     <div className="flex flex-col items-center min-h-screen p-4">
